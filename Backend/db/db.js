@@ -1,7 +1,10 @@
 const mongoose=require('mongoose');
 
-function connnectToDb(){
-    mongoose.connect(process.env.DB_CONNECT,{useNewUrlParser:true, useUnifiedTopology:true},()=>{
-         console.log('Connected to DB');
-    });
+function connectToDb(){
+    mongoose.connect(process.env.DB_CONNECT).
+    then(()=>{
+        console.log('connected to DB');
+    }).catch(err=>console.log(err));
 }
+
+module.exports=connectToDb;
