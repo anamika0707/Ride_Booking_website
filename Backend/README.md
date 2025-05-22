@@ -1,14 +1,16 @@
-# User Registration API
+# User API Documentation
 
-## Endpoint
+## Endpoints
+
+### 1. **User Registration**
 
 `POST /users/register`
 
-## Description
+#### Description
 
 Registers a new user in the system. This endpoint validates the input, hashes the password, creates a new user, and returns an authentication token along with the user data.
 
-## Request Body
+#### Request Body
 
 Send a JSON object with the following structure:
 
@@ -23,16 +25,16 @@ Send a JSON object with the following structure:
 }
 ```
 
-### Fields
+#### Fields
 
 - `fullname.firstname` (string, required): First name, minimum 3 characters.
 - `fullname.lastname` (string, required): Last name, minimum 3 characters.
 - `email` (string, required): Valid email address.
 - `password` (string, required): Password, minimum 6 characters.
 
-## Responses
+#### Responses
 
-### Success
+##### Success
 
 - **Status Code:** `201 Created`
 - **Body:**
@@ -45,13 +47,12 @@ Send a JSON object with the following structure:
         "firstname": "John",
         "lastname": "Doe"
       },
-      "email": "john.doe@example.com",
-      // other user fields
+      "email": "john.doe@example.com"
     }
   }
   ```
 
-### Validation Error
+##### Validation Error
 
 - **Status Code:** `400 Bad Request`
 - **Body:**
@@ -63,12 +64,11 @@ Send a JSON object with the following structure:
         "param": "email",
         "location": "body"
       }
-      // ...other errors
     ]
   }
   ```
 
-### Missing Fields
+##### Missing Fields
 
 - **Status Code:** `500 Internal Server Error`
 - **Body:**
@@ -78,13 +78,86 @@ Send a JSON object with the following structure:
   }
   ```
 
-## Example Request
+---
+
+### 2. **User Login**
+
+`POST /users/login`
+
+#### Description
+
+Authenticates a user by validating their email and password. Returns a JWT token and user data upon successful login.
+
+#### Request Body
+
+Send a JSON object with the following structure:
+
+```json
+{
+  "email": "john.doe@example.com",
+  "password": "yourpassword"
+}
+```
+
+#### Fields
+
+- `email` (string, required): Valid email address.
+- `password` (string, required): Password, minimum 6 characters.
+
+#### Responses
+
+##### Success
+
+- **Status Code:** `200 OK`
+- **Body:**
+  ```json
+  {
+    "token": "<jwt_token>",
+    "user": {
+      "_id": "<user_id>",
+      "fullname": {
+        "firstname": "John",
+        "lastname": "Doe"
+      },
+      "email": "john.doe@example.com"
+    }
+  }
+  ```
+
+##### Validation Error
+
+- **Status Code:** `400 Bad Request`
+- **Body:**
+  ```json
+  {
+    "errors": [
+      {
+        "msg": "Invalid Email",
+        "param": "email",
+        "location": "body"
+      }
+    ]
+  }
+  ```
+
+##### Invalid Credentials
+
+- **Status Code:** `401 Unauthorized`
+- **Body:**
+  ```json
+  {
+    "message": "Invalid email or password"
+  }
+  ```
+
+---
+
+## Example Login Request
 
 ```bash
-curl -X POST http://localhost:4000/users/register \
+curl -X POST http://localhost:4000/users/login \
   -H "Content-Type: application/json" \
   -d '{
-    "fullname": { "firstname": "John", "lastname": "Doe" },
     "email": "john.doe@example.com",
     "password": "yourpassword"
   }'
