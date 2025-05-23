@@ -264,16 +264,16 @@ Send a JSON object with the following structure:
 ```json
 {
   "fullname": {
-    "firstname": "John",
-    "lastname": "Doe"
+    "firstname": "John", // Required, minimum 3 characters
+    "lastname": "Doe" // Required, minimum 3 characters
   },
-  "email": "john.doe@example.com",
-  "password": "yourpassword",
+  "email": "john.doe@example.com", // Required, valid email address
+  "password": "yourpassword", // Required, minimum 6 characters
   "vehicle": {
-    "color": "Red",
-    "plate": "ABC123",
-    "capacity": 4,
-    "vehicleType": "car"
+    "color": "Red", // Required, minimum 3 characters
+    "plate": "ABC123", // Required, minimum 3 characters
+    "capacity": 4, // Required, must be a number
+    "vehicleType": "car" // Required, must be one of: "car", "motorcycle", "auto"
   }
 }
 ```
@@ -297,17 +297,20 @@ Send a JSON object with the following structure:
 - **Body:**
   ```json
   {
-    "_id": "<captain_id>",
-    "fullname": {
-      "firstname": "John",
-      "lastname": "Doe"
-    },
-    "email": "john.doe@example.com",
-    "vehicle": {
-      "color": "Red",
-      "plate": "ABC123",
-      "capacity": 4,
-      "vehicleType": "car"
+    "token": "<jwt_token>", // JWT token for authentication
+    "captain": {
+      "_id": "<captain_id>",
+      "fullname": {
+        "firstname": "John",
+        "lastname": "Doe"
+      },
+      "email": "john.doe@example.com",
+      "vehicle": {
+        "color": "Red",
+        "plate": "ABC123",
+        "capacity": 4,
+        "vehicleType": "car"
+      }
     }
   }
   ```
@@ -333,19 +336,180 @@ Send a JSON object with the following structure:
   }
   ```
 
-##### Missing Fields
+##### Duplicate Email
 
-- **Status Code:** `500 Internal Server Error`
+- **Status Code:** `400 Bad Request`
 - **Body:**
   ```json
   {
-    "message": "All fields are required"
+    "message": "Captain already exists"
   }
   ```
 
 ---
 
-## Example Request
+### 2. **Captain Login**
+
+`POST /captains/login`
+
+#### Description
+
+Authenticates a captain by validating their email and password. Returns a JWT token and captain data upon successful login.
+
+#### Request Body
+
+Send a JSON object with the following structure:
+
+```json
+{
+  "email": "john.doe@example.com", // Required, valid email address
+  "password": "yourpassword" // Required, minimum 6 characters
+}
+```
+
+#### Responses
+
+##### Success
+
+- **Status Code:** `200 OK`
+- **Body:**
+  ```json
+  {
+    "token": "<jwt_token>", // JWT token for authentication
+    "captain": {
+      "_id": "<captain_id>",
+      "fullname": {
+        "firstname": "John",
+        "lastname": "Doe"
+      },
+      "email": "john.doe@example.com",
+      "vehicle": {
+        "color": "Red",
+        "plate": "ABC123",
+        "capacity": 4,
+        "vehicleType": "car"
+      }
+    }
+  }
+  ```
+
+##### Validation Error
+
+- **Status Code:** `400 Bad Request`
+- **Body:**
+  ```json
+  {
+    "errors": [
+      {
+        "msg": "Please enter a valid email address",
+        "param": "email",
+        "location": "body"
+      },
+      {
+        "msg": "Password must be at least 6 characters long",
+        "param": "password",
+        "location": "body"
+      }
+    ]
+  }
+  ```
+
+##### Invalid Credentials
+
+- **Status Code:** `401 Unauthorized`
+- **Body:**
+  ```json
+  {
+    "message": "Invalid email or password"
+  }
+  ```
+
+---
+
+### 3. **Get Captain Profile**
+
+`GET /captains/profile`
+
+#### Description
+
+Fetches the profile of the currently authenticated captain. Requires a valid JWT token in the request headers or cookies.
+
+#### Headers
+
+- `Authorization` (string, required): Bearer token for authentication.
+
+#### Responses
+
+##### Success
+
+- **Status Code:** `200 OK`
+- **Body:**
+  ```json
+  {
+    "_id": "<captain_id>",
+    "fullname": {
+      "firstname": "John",
+      "lastname": "Doe"
+    },
+    "email": "john.doe@example.com",
+    "vehicle": {
+      "color": "Red",
+      "plate": "ABC123",
+      "capacity": 4,
+      "vehicleType": "car"
+    }
+  }
+  ```
+
+##### Unauthorized
+
+- **Status Code:** `401 Unauthorized`
+- **Body:**
+  ```json
+  {
+    "message": "Authentication required"
+  }
+  ```
+
+---
+
+### 4. **Captain Logout**
+
+`GET /captains/logout`
+
+#### Description
+
+Logs out the currently authenticated captain by clearing the JWT token from cookies and blacklisting the token.
+
+#### Headers
+
+- `Authorization` (string, required): Bearer token for authentication.
+
+#### Responses
+
+##### Success
+
+- **Status Code:** `200 OK`
+- **Body:**
+  ```json
+  {
+    "message": "Logged out successfully"
+  }
+  ```
+
+##### Unauthorized
+
+- **Status Code:** `401 Unauthorized`
+- **Body:**
+  ```json
+  {
+    "message": "Authentication required"
+  }
+  ```
+
+---
+
+## Example Requests
 
 ### Register Captain
 
@@ -366,4 +530,29 @@ curl -X POST http://localhost:4000/captains/register \
       "vehicleType": "car"
     }
   }'
+```
+
+### Login Captain
+
+```bash
+curl -X POST http://localhost:4000/captains/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "john.doe@example.com",
+    "password": "yourpassword"
+  }'
+```
+
+### Get Captain Profile
+
+```bash
+curl -X GET http://localhost:4000/captains/profile \
+  -H "Authorization: Bearer <jwt_token>"
+```
+
+### Logout Captain
+
+```bash
+curl -X GET http://localhost:4000/captains/logout \
+  -H "Authorization: Bearer <jwt_token>"
 ```
