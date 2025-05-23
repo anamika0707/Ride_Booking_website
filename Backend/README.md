@@ -244,3 +244,126 @@ curl -X GET http://localhost:4000/users/profile \
 curl -X GET http://localhost:4000/users/logout \
   -H "Authorization: Bearer <jwt_token>"
 ```
+
+# Captain API Documentation
+
+## Endpoints
+
+### 1. **Captain Registration**
+
+`POST /captains/register`
+
+#### Description
+
+Registers a new captain in the system. This endpoint validates the input, hashes the password, creates a new captain, and stores their vehicle details.
+
+#### Request Body
+
+Send a JSON object with the following structure:
+
+```json
+{
+  "fullname": {
+    "firstname": "John",
+    "lastname": "Doe"
+  },
+  "email": "john.doe@example.com",
+  "password": "yourpassword",
+  "vehicle": {
+    "color": "Red",
+    "plate": "ABC123",
+    "capacity": 4,
+    "vehicleType": "car"
+  }
+}
+```
+
+#### Fields
+
+- `fullname.firstname` (string, required): First name, minimum 3 characters.
+- `fullname.lastname` (string, required): Last name, minimum 3 characters.
+- `email` (string, required): Valid email address.
+- `password` (string, required): Password, minimum 6 characters.
+- `vehicle.color` (string, required): Color of the vehicle, minimum 3 characters.
+- `vehicle.plate` (string, required): Vehicle plate number, minimum 3 characters.
+- `vehicle.capacity` (number, required): Capacity of the vehicle (number of passengers).
+- `vehicle.vehicleType` (string, required): Type of the vehicle. Must be one of the following: `car`, `motorcycle`, `auto`.
+
+#### Responses
+
+##### Success
+
+- **Status Code:** `201 Created`
+- **Body:**
+  ```json
+  {
+    "_id": "<captain_id>",
+    "fullname": {
+      "firstname": "John",
+      "lastname": "Doe"
+    },
+    "email": "john.doe@example.com",
+    "vehicle": {
+      "color": "Red",
+      "plate": "ABC123",
+      "capacity": 4,
+      "vehicleType": "car"
+    }
+  }
+  ```
+
+##### Validation Error
+
+- **Status Code:** `400 Bad Request`
+- **Body:**
+  ```json
+  {
+    "errors": [
+      {
+        "msg": "First name must be at least 3 characters long",
+        "param": "fullname.firstname",
+        "location": "body"
+      },
+      {
+        "msg": "Please enter a valid email address",
+        "param": "email",
+        "location": "body"
+      }
+    ]
+  }
+  ```
+
+##### Missing Fields
+
+- **Status Code:** `500 Internal Server Error`
+- **Body:**
+  ```json
+  {
+    "message": "All fields are required"
+  }
+  ```
+
+---
+
+## Example Request
+
+### Register Captain
+
+```bash
+curl -X POST http://localhost:4000/captains/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "fullname": {
+      "firstname": "John",
+      "lastname": "Doe"
+    },
+    "email": "john.doe@example.com",
+    "password": "yourpassword",
+    "vehicle": {
+      "color": "Red",
+      "plate": "ABC123",
+      "capacity": 4,
+      "vehicleType": "car"
+    }
+  }'
+```
